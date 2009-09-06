@@ -50,17 +50,27 @@ class DawnHX
 					if(field.doc != null) 
 					if(hasInject(field.doc))
 				{
-					switch(field.type)
-					{
-						default:
-						case CClass(name, params):
-							var clazz:Class<Dynamic> = Type.resolveClass(name);
-							inspect(mapper.getMapping(clazz), node);
-					}
+					inspectClass(field.type, node);
 				}
 		}
 		
 		return node;
+	}
+	
+	private function inspectClass(type:haxe.rtti.CType, node:TreeNode<Mapping>):Void
+	{
+		switch(type)
+		{
+			default:
+			case CClass(name, params):
+				var clazz:Class<Dynamic> = Type.resolveClass(name);
+				inspect(mapper.getMapping(clazz), node);
+			case CFunction(args, ret):
+				for(arg in args)
+				{
+					inspectClass(arg.t, node);
+				}
+		}
 	}
 	
 	private function hasInject(doc:String):Bool
@@ -164,8 +174,13 @@ class Dude implements haxe.rtti.Infos
 	/**
 	*	@Inject
 	*/
-	public var bike(default,default):Bike;
-	
+	public function new(bike:Bike, wallet:Wallet)
+	{
+	}
+}
+
+class Wallet implements haxe.rtti.Infos
+{
 	public function new()
 	{
 	}
@@ -182,5 +197,6 @@ class TestConfig implements IConfig
 		mapper.map(Thing);
 		mapper.map(Dude);
 		mapper.map(Bike);
+		mapper.map(Wallet);
 	}
 }
