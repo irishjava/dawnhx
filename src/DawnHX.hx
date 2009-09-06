@@ -22,15 +22,31 @@ class DawnHX
 		var rtti:String = untyped mapping.clazz.__rtti;
 		var root = Xml.parse(rtti).firstElement();
 		var infos = new haxe.rtti.XmlParser().processElement(root);
-		trace(infos);
+		
+		switch(infos)
+		{
+			default:
+			case TClassdecl(classDef):
+				for(field in classDef.fields) 
+					if(field.doc != null) 
+					if(hasInject(field.doc))
+				{
+					trace(field);
+				}
+		}
 		
 		return new TreeNode<Mapping>(mapping);
+	}
+	
+	private function hasInject(doc:String):Bool
+	{
+		return doc.indexOf("@Inject") > -1;
 	}
 		
 	public static function main():Void
 	{
 		var m:DawnHX = new DawnHX(new TestConfig());
-		trace(m.getObject(Thing));
+		m.getObject(Thing);
 	}
 }
 
@@ -100,7 +116,19 @@ class Thing implements haxe.rtti.Infos
 	*	@Inject
 	*/
 	public var dude:Dude;
+
+	/**
+	*	@Inject
+	*/
+	public var bike(default,default):Bike;
 	
+	public function new()
+	{
+	}
+}
+
+class Bike
+{
 	public function new()
 	{
 	}

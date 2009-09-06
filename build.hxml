@@ -1,5 +1,7 @@
 #build file
 -cp src
+-cp libs
 -main DawnHX
 -swf bin/DawnHX.swf
+-D use_rtti_doc
 -swf-version 10
