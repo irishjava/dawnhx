@@ -1,0 +1,5 @@
+#build file
+-cp src
+-main DawnHX
+-swf bin/DawnHX.swf
+-swf-version 10
