@@ -13,12 +13,31 @@ class DawnHX
 	public function getObject<T>(clazz:Class<Dynamic>):T
 	{
 		var tree:TreeNode<Mapping> = inspect(mapper.getMapping(clazz));
+		var dump:String = "\n";
 		
+		tree.preOrder( 
+			function(node:TreeNode<Mapping>):Bool
+			{
+				var d:Int = node.depth();
+				for (i in 0...d)
+				{
+					if (i == d - 1)
+						dump += "+---";
+					else
+						dump += "|    ";
+				}
+				dump += node + "\n";
+				return true;
+			});
+			
+		trace(dump);
 		return null;
 	}
 	
 	private function inspect(mapping:Mapping, parent:TreeNode<Mapping> = null):TreeNode<Mapping>
 	{
+		var node:TreeNode<Mapping> = new TreeNode<Mapping>( mapping, parent );
+		
 		var rtti:String = untyped mapping.clazz.__rtti;
 		var root = Xml.parse(rtti).firstElement();
 		var infos = new haxe.rtti.XmlParser().processElement(root);
@@ -31,11 +50,17 @@ class DawnHX
 					if(field.doc != null) 
 					if(hasInject(field.doc))
 				{
-					trace(field);
+					switch(field.type)
+					{
+						default:
+						case CClass(name, params):
+							var clazz:Class<Dynamic> = Type.resolveClass(name);
+							inspect(mapper.getMapping(clazz), node);
+					}
 				}
 		}
 		
-		return new TreeNode<Mapping>(mapping);
+		return node;
 	}
 	
 	private function hasInject(doc:String):Bool
@@ -90,6 +115,11 @@ class Mapping
 	public function new()
 	{
 	}
+	
+	public function toString():String
+	{
+		return "[Mapping clazz:" + clazz + "]";
+	}
 }
 
 class Provider
@@ -117,25 +147,25 @@ class Thing implements haxe.rtti.Infos
 	*/
 	public var dude:Dude;
 
+	public function new()
+	{
+	}
+}
+
+class Bike implements haxe.rtti.Infos
+{
+	public function new()
+	{
+	}
+}
+
+class Dude implements haxe.rtti.Infos
+{
 	/**
 	*	@Inject
 	*/
 	public var bike(default,default):Bike;
 	
-	public function new()
-	{
-	}
-}
-
-class Bike
-{
-	public function new()
-	{
-	}
-}
-
-class Dude
-{
 	public function new()
 	{
 	}
@@ -150,5 +180,7 @@ class TestConfig implements IConfig
 	public function configure(mapper:IMapper):Void
 	{
 		mapper.map(Thing);
+		mapper.map(Dude);
+		mapper.map(Bike);
 	}
 }
