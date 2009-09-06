@@ -1,10 +1,17 @@
 import de.polygonal.ds.TreeNode;
 
+import uk.co.ziazoo.injector.inspect.IInspector;
+
+import uk.co.ziazoo.injector.mapping.IMap;
+import uk.co.ziazoo.injector.mapping.IMapper;
+import uk.co.ziazoo.injector.mapping.Mapper;
+
 class DawnHX
 {
 	public var mapper(default,default):IMapper;
+	public var inspector(default,default):IInspector;
 	
-	public function new( config:IConfig )
+	public function new(config:IConfig)
 	{
 		mapper = new Mapper();
 		config.configure(mapper);
@@ -12,11 +19,11 @@ class DawnHX
 	
 	public function getObject<T>(clazz:Class<Dynamic>):T
 	{
-		var tree:TreeNode<Mapping> = inspect(mapper.getMapping(clazz));
+		var tree:TreeNode<IMap> = inspect(mapper.getMapping(clazz));
 		var dump:String = "\n";
 		
 		tree.preOrder( 
-			function(node:TreeNode<Mapping>):Bool
+			function(node:TreeNode<IMap>):Bool
 			{
 				var d:Int = node.depth();
 				for (i in 0...d)
@@ -34,9 +41,9 @@ class DawnHX
 		return null;
 	}
 	
-	private function inspect(mapping:Mapping, parent:TreeNode<Mapping> = null):TreeNode<Mapping>
+	private function inspect(mapping:IMap, parent:TreeNode<IMap> = null):TreeNode<IMap>
 	{
-		var node:TreeNode<Mapping> = new TreeNode<Mapping>( mapping, parent );
+		var node:TreeNode<IMap> = new TreeNode<IMap>( mapping, parent );
 		
 		var rtti:String = untyped mapping.clazz.__rtti;
 		var root = Xml.parse(rtti).firstElement();
@@ -50,14 +57,14 @@ class DawnHX
 					if(field.doc != null) 
 					if(hasInject(field.doc))
 				{
-					inspectClass(field.type, node);
+					inspectCType(field.type, node);
 				}
 		}
 		
 		return node;
 	}
 	
-	private function inspectClass(type:haxe.rtti.CType, node:TreeNode<Mapping>):Void
+	private function inspectCType(type:haxe.rtti.CType, node:TreeNode<IMap>):Void
 	{
 		switch(type)
 		{
@@ -68,7 +75,7 @@ class DawnHX
 			case CFunction(args, ret):
 				for(arg in args)
 				{
-					inspectClass(arg.t, node);
+					inspectCType(arg.t, node);
 				}
 		}
 	}
@@ -85,69 +92,9 @@ class DawnHX
 	}
 }
 
-class Mapper implements IMapper
-{
-	private var _mappings:Array<Mapping>;
-	
-	public function new()
-	{
-		_mappings = new Array();
-	}
-	
-	public function map(clazz:Class<Dynamic>):Mapping
-	{
-		var mapping:Mapping = new Mapping();
-		mapping.clazz = clazz;
-		
-		_mappings.push(mapping);
-		
-		return mapping;
-	}
-	
-	public function getMapping(clazz:Class<Dynamic>):Mapping
-	{
-		for(mapping in _mappings)
-		{
-			if(mapping.clazz == clazz)
-			{
-				return mapping;
-			}
-		}
-		return null;
-	}
-}
-
-class Mapping
-{
-	public var clazz(default,default):Class<Dynamic>;
-	public var provider(default,default):Provider;
-	
-	public function new()
-	{
-	}
-	
-	public function toString():String
-	{
-		return "[Mapping clazz:" + clazz + "]";
-	}
-}
-
-class Provider
-{
-	public function new()
-	{
-	}
-}
-
 interface IConfig
 {
 	function configure(mapper:IMapper):Void;
-}
-
-interface IMapper
-{
-	function map(clazz:Class<Dynamic>):Mapping;
-	function getMapping(clazz:Class<Dynamic>):Mapping;
 }
 
 class Thing implements haxe.rtti.Infos
