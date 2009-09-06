@@ -7,5 +7,7 @@ import uk.co.ziazoo.injector.mapping.IMap;
 
 interface IInspector
 {
-	function inspect(mapping:IMap, node:TreeNode<IMap> = null):Void;
+	var mapper(default,default):IMapper;
+	
+	function inspect(mapping:IMap, node:TreeNode<IMap> = null):TreeNode<IMap>;
 }

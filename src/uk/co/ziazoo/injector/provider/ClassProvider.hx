@@ -1,6 +1,6 @@
 package uk.co.ziazoo.injector.provider;
 
-class Provider implements IProvider
+class ClassProvider extends Provider
 {
 	public function new()
 	{
