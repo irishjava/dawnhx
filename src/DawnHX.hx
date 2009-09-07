@@ -24,8 +24,7 @@ class DawnHX
 		var tree:TreeNode<IMap> = inspector.inspect(mapper.getMapping(clazz));
 		var dump:String = "\n";
 		
-		tree.preOrder( 
-			function(node:TreeNode<IMap>):Bool
+		tree.preOrder(function(node:TreeNode<IMap>):Bool
 			{
 				var d:Int = node.depth();
 				for (i in 0...d)
@@ -99,7 +98,7 @@ class TestConfig implements IConfig
 	
 	public function configure(mapper:IMapper):Void
 	{
-		mapper.map(Thing);
+		mapper.map(Thing).toClass(Thing);
 		mapper.map(Dude);
 		mapper.map(Bike);
 		mapper.map(Wallet);
